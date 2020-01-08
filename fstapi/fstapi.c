@@ -37,8 +37,6 @@
  *
  */
 
-#include <config.h>
-
 #include "fstapi.h"
 #include "fastlz.h"
 #include "lz4.h"
