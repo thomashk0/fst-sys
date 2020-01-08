@@ -2,34 +2,25 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use std::os::raw::{c_void, c_char, c_int};
-use std::ffi::CString;
+pub mod raw;
 
-// The raw FFI are extracted for a call to:
-// $ bindgen fstapi/fstapi.h  --whitelist-function "fstReader.*" --whitelist-type "fst.*" --ctypes-prefix "" -o src/bindings.rs
+use std::os::raw::{c_void, c_uchar, c_char};
+use std::ffi::{CString, CStr};
+use std::ptr::null_mut;
 
-const FST_FT_VERILOG: i32 = 0;
-const FST_FT_VHDL: i32 = 1;
-const FST_FT_VERILOG_VHDL: i32 = 2;
-
-extern "C" {
-    pub fn fstReaderOpen(name: *const c_char) -> *mut c_void;
-    pub fn fstReaderClose(ctx: *mut c_void);
-    pub fn fstReaderGetFileType(ctx: *mut c_void) -> c_int;
-    pub fn fstReaderGetEndTime(ctx: *mut c_void) -> u64;
-}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum FstError {
     InvalidFile,
-    InvalidConversion
+    InvalidConversion,
+    Utf8Error,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum FstFileType {
     Verilog,
     Vhdl,
-    VerilogVhdl
+    VerilogVhdl,
 }
 
 #[derive(Debug)]
@@ -37,27 +28,49 @@ pub struct FstReader {
     handle: *mut c_void
 }
 
+
+extern "C" fn dump_command(_ctx: *mut c_void, time: u64, id: raw::fstHandle, value: *const c_uchar) {
+    let value_str = unsafe { CStr::from_ptr(value as *const c_char).to_str().unwrap() };
+    println!("BLOCK: #{} id={} ({})", time, id, value_str);
+}
+
 impl FstReader {
-    pub fn from_file(name: &str) -> Result<FstReader, FstError> {
-        let p = unsafe { fstReaderOpen(CString::new(name).unwrap().as_ptr()) };
+    pub fn from_file(name: &str, use_extensions: bool) -> Result<FstReader, FstError> {
+        let p = unsafe { raw::fstReaderOpen(CString::new(name).unwrap().as_ptr()) };
         if p.is_null() {
             return Err(FstError::InvalidFile);
+        }
+        if use_extensions {
+            unsafe {
+                raw::fstReaderSetVcdExtensions(p, 1);
+            }
         }
         Ok(FstReader { handle: p })
     }
 
     pub fn file_type(&self) -> Result<FstFileType, FstError> {
-        let w = unsafe { fstReaderGetFileType(self.handle) };
+        let w = unsafe { raw::fstReaderGetFileType(self.handle) } as u32;
         match w {
-            FST_FT_VERILOG => Ok(FstFileType::Verilog),
-            FST_FT_VHDL => Ok(FstFileType::Vhdl),
-            FST_FT_VERILOG_VHDL => Ok(FstFileType::VerilogVhdl),
+            raw::fstFileType_FST_FT_VERILOG => Ok(FstFileType::Verilog),
+            raw::fstFileType_FST_FT_VHDL => Ok(FstFileType::Vhdl),
+            raw::fstFileType_FST_FT_VERILOG_VHDL => Ok(FstFileType::VerilogVhdl),
             _ => Err(FstError::InvalidConversion)
         }
     }
 
+    pub fn iter_block(&self) -> i32 {
+        unsafe {
+            raw::fstReaderSetFacProcessMaskAll(self.handle);
+            raw::fstReaderIterBlocks(self.handle, Some(dump_command), self.handle, null_mut())
+        }
+    }
+
     pub fn end_time(&self) -> u64 {
-        unsafe { fstReaderGetEndTime(self.handle) }
+        unsafe { raw::fstReaderGetEndTime(self.handle) }
+    }
+
+    pub fn var_count(&self) -> u64 {
+        unsafe { raw::fstReaderGetVarCount(self.handle) }
     }
 }
 
@@ -67,7 +80,7 @@ impl Drop for FstReader {
             return;
         }
         unsafe {
-            fstReaderClose(self.handle);
+            raw::fstReaderClose(self.handle);
         }
     }
 }

@@ -10,3 +10,11 @@ See [examples/main.rs](examples/main.rs) and run it with:
 ```console
 $ cargo run --example main <path to some FST file>
 ```
+
+Need some FST files? there are some avaibles in gtkwave source tree! (see ``examples/``)
+
+## Update bindings
+
+```console
+$ ./regen.sh
+```
