@@ -4,10 +4,9 @@
 
 pub mod raw;
 
-use std::os::raw::{c_void, c_uchar, c_char};
-use std::ffi::{CString, CStr};
+use std::ffi::{CStr, CString};
+use std::os::raw::{c_uchar, c_void};
 use std::ptr::null_mut;
-
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum FstError {
@@ -26,13 +25,10 @@ pub enum FstFileType {
 
 #[derive(Debug)]
 pub struct FstReader {
-    handle: *mut c_void
+    handle: *mut c_void,
 }
 
-extern "C" fn dump_command(_ctx: *mut c_void, time: u64, id: raw::fstHandle, value: *const c_uchar) {
-    let value_str = unsafe { CStr::from_ptr(value as *const c_char).to_str().unwrap() };
-    println!("BLOCK: #{} id={} ({})", time, id, value_str);
-}
+type FstChangeCallback = extern "C" fn(*mut c_void, u64, raw::fstHandle, *const c_uchar);
 
 impl FstReader {
     pub fn from_file(name: &str, use_extensions: bool) -> Result<FstReader, FstError> {
@@ -48,7 +44,10 @@ impl FstReader {
         Ok(FstReader { handle: p })
     }
 
-    pub fn iter_hier<F>(&mut self, mut callback: F) where F: FnMut(&raw::fstHier) {
+    pub fn iter_hier<F>(&mut self, mut callback: F)
+    where
+        F: FnMut(&raw::fstHier),
+    {
         unsafe {
             raw::fstReaderIterateHierRewind(self.handle);
         }
@@ -68,10 +67,14 @@ impl FstReader {
         }
     }
 
-    pub fn iter_block(&mut self) -> i32 {
+    pub fn iter_blocks<F>(&mut self, mut f: F) -> i32
+    where
+        F: FnMut(u64, raw::fstHandle, *const c_uchar),
+    {
         unsafe {
             raw::fstReaderSetFacProcessMaskAll(self.handle);
-            raw::fstReaderIterBlocks(self.handle, Some(dump_command), self.handle, null_mut())
+            let (data, f) = unpack_closure(&mut f);
+            raw::fstReaderIterBlocks(self.handle, Some(f), data, null_mut())
         }
     }
 
@@ -85,7 +88,7 @@ impl FstReader {
             raw::fstFileType_FST_FT_VERILOG => Ok(FstFileType::Verilog),
             raw::fstFileType_FST_FT_VHDL => Ok(FstFileType::Vhdl),
             raw::fstFileType_FST_FT_VERILOG_VHDL => Ok(FstFileType::VerilogVhdl),
-            _ => Err(FstError::InvalidConversion)
+            _ => Err(FstError::InvalidConversion),
         }
     }
 
@@ -102,7 +105,7 @@ impl FstReader {
         unsafe { raw::fstReaderGetStartTime(self.handle) }
     }
 
-    // The exponent of the timescale, time =cycle 10^(timescale)
+    // The exponent of the timescale, time = cycle 10^(timescale)
     pub fn timescale(&self) -> i8 {
         unsafe { raw::fstReaderGetTimescale(self.handle) }
     }
@@ -118,17 +121,26 @@ impl FstReader {
     pub fn version_string(&self) -> Result<&str, FstError> {
         let c_str = unsafe {
             let p = raw::fstReaderGetVersionString(self.handle);
-            CStr::from_ptr(p ).to_str()
+            CStr::from_ptr(p).to_str()
         };
-        c_str.or(Err(FstError::Utf8Error) )
+        c_str.or(Err(FstError::Utf8Error))
     }
 
     pub fn date_string(&self) -> Result<&str, FstError> {
         let c_str = unsafe {
             let p = raw::fstReaderGetDateString(self.handle);
-            CStr::from_ptr(p ).to_str()
+            CStr::from_ptr(p).to_str()
         };
-        c_str.or(Err(FstError::Utf8Error) )
+        c_str.or(Err(FstError::Utf8Error))
+    }
+
+    pub fn time_range(&mut self, range: Option<(u64, u64)>) {
+        match range {
+            None => unsafe { raw::fstReaderSetUnlimitedTimeRange(self.handle) },
+            Some((start, end)) => unsafe {
+                raw::fstReaderSetLimitTimeRange(self.handle, start, end)
+            },
+        }
     }
 }
 
@@ -141,4 +153,22 @@ impl Drop for FstReader {
             raw::fstReaderClose(self.handle);
         }
     }
+}
+
+unsafe fn unpack_closure<F>(closure: &mut F) -> (*mut c_void, FstChangeCallback)
+where
+    F: FnMut(u64, raw::fstHandle, *const c_uchar),
+{
+    extern "C" fn trampoline<F>(
+        data: *mut c_void,
+        time: u64,
+        handle: raw::fstHandle,
+        value: *const c_uchar,
+    ) where
+        F: FnMut(u64, raw::fstHandle, *const c_uchar),
+    {
+        let closure: &mut F = unsafe { &mut *(data as *mut F) };
+        (*closure)(time, handle, value);
+    }
+    (closure as *mut F as *mut c_void, trampoline::<F>)
 }
