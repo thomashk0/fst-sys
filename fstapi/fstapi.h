@@ -304,7 +304,7 @@ union {
                 uint32_t length;
                 fstHandle handle;
                 uint32_t name_length; /* strlen(u.var.name) */
-                unsigned is_alias : 1;
+                uint8_t is_alias;
                 } var;
 
         /* if htyp == FST_HT_ATTRBEGIN */

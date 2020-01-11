@@ -1,6 +1,5 @@
 [package]
 name = "fst-sys"
-links = "z"
 version = "0.1.0"
 authors = ["Thomas Hiscock <thomash000@gmail.com>"]
 edition = "2018"
@@ -13,5 +12,5 @@ build = "build.rs"
 [build-dependencies]
 cc = "1.0"
 
-[[example]]
-name = "main"
+[[test]]
+name = "basics"
