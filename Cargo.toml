@@ -7,7 +7,7 @@ repository = "https://github.com/thomashk0/fst-sys.git"
 description = "Bindings for GTKWave FST file manipulation API."
 readme = "README.md"
 license = "MIT"
-include = ["src/*", "Cargo.toml", "README.md", "LICENSE.txt", "fstapi/*.c", "fstapi/*.h", "assets/fst/*.fst"]
+include = ["src/*", "tests/*.rs", "build.rs", "Cargo.toml", "README.md", "LICENSE.txt", "fstapi/*.c", "fstapi/*.h", "assets/fst/*.fst"]
 categories = ["external-ffi-bindings" ]
 build = "build.rs"
 
