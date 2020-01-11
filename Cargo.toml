@@ -4,6 +4,7 @@ version = "0.2.0"
 authors = ["Thomas Hiscock <thomash000@gmail.com>"]
 edition = "2018"
 repository = "https://github.com/thomashk0/fst-sys.git"
+homepage = "https://github.com/thomashk0/fst-sys"
 description = "Bindings for GTKWave FST file manipulation API."
 readme = "README.md"
 license = "MIT"

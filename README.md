@@ -1,5 +1,9 @@
 # Rust wrapper around the FST API of Gtkwave
 
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
+[![Crates.io Version](https://img.shields.io/crates/v/fst-sys.svg)](https://crates.io/crates/fst-sys)
+[![Doc.rs Documentation](https://docs.rs/fst-sys/badge.svg)](https://docs.rs/fst-sys/)
+
 This crate exposes raw bindings to GTKWave FST API in Rust. 
 The C sources included in this repository (see [fstapi](./fstapi)) are copied from [Gtkwave source repository](https://sourceforge.net/projects/gtkwave/).
 
