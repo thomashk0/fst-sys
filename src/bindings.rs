@@ -621,6 +621,169 @@ fn bindgen_test_layout_fstHier() {
     );
 }
 extern "C" {
+    pub fn fstWriterClose(ctx: *mut ::std::os::raw::c_void);
+}
+extern "C" {
+    pub fn fstWriterCreate(
+        nam: *const ::std::os::raw::c_char,
+        use_compressed_hier: ::std::os::raw::c_int,
+    ) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn fstWriterCreateVar(
+        ctx: *mut ::std::os::raw::c_void,
+        vt: fstVarType,
+        vd: fstVarDir,
+        len: u32,
+        nam: *const ::std::os::raw::c_char,
+        aliasHandle: fstHandle,
+    ) -> fstHandle;
+}
+extern "C" {
+    pub fn fstWriterCreateVar2(
+        ctx: *mut ::std::os::raw::c_void,
+        vt: fstVarType,
+        vd: fstVarDir,
+        len: u32,
+        nam: *const ::std::os::raw::c_char,
+        aliasHandle: fstHandle,
+        type_: *const ::std::os::raw::c_char,
+        svt: fstSupplementalVarType,
+        sdt: fstSupplementalDataType,
+    ) -> fstHandle;
+}
+extern "C" {
+    pub fn fstWriterEmitValueChange(
+        ctx: *mut ::std::os::raw::c_void,
+        handle: fstHandle,
+        val: *const ::std::os::raw::c_void,
+    );
+}
+extern "C" {
+    pub fn fstWriterEmitVariableLengthValueChange(
+        ctx: *mut ::std::os::raw::c_void,
+        handle: fstHandle,
+        val: *const ::std::os::raw::c_void,
+        len: u32,
+    );
+}
+extern "C" {
+    pub fn fstWriterEmitDumpActive(ctx: *mut ::std::os::raw::c_void, enable: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn fstWriterEmitTimeChange(ctx: *mut ::std::os::raw::c_void, tim: u64);
+}
+extern "C" {
+    pub fn fstWriterFlushContext(ctx: *mut ::std::os::raw::c_void);
+}
+extern "C" {
+    pub fn fstWriterGetDumpSizeLimitReached(
+        ctx: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn fstWriterGetFseekFailed(ctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn fstWriterSetAttrBegin(
+        ctx: *mut ::std::os::raw::c_void,
+        attrtype: fstAttrType,
+        subtype: ::std::os::raw::c_int,
+        attrname: *const ::std::os::raw::c_char,
+        arg: u64,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetAttrEnd(ctx: *mut ::std::os::raw::c_void);
+}
+extern "C" {
+    pub fn fstWriterSetComment(
+        ctx: *mut ::std::os::raw::c_void,
+        comm: *const ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetDate(ctx: *mut ::std::os::raw::c_void, dat: *const ::std::os::raw::c_char);
+}
+extern "C" {
+    pub fn fstWriterSetDumpSizeLimit(ctx: *mut ::std::os::raw::c_void, numbytes: u64);
+}
+extern "C" {
+    pub fn fstWriterSetEnvVar(
+        ctx: *mut ::std::os::raw::c_void,
+        envvar: *const ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetFileType(ctx: *mut ::std::os::raw::c_void, filetype: fstFileType);
+}
+extern "C" {
+    pub fn fstWriterSetPackType(ctx: *mut ::std::os::raw::c_void, typ: fstWriterPackType);
+}
+extern "C" {
+    pub fn fstWriterSetParallelMode(
+        ctx: *mut ::std::os::raw::c_void,
+        enable: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetRepackOnClose(
+        ctx: *mut ::std::os::raw::c_void,
+        enable: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetScope(
+        ctx: *mut ::std::os::raw::c_void,
+        scopetype: fstScopeType,
+        scopename: *const ::std::os::raw::c_char,
+        scopecomp: *const ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetSourceInstantiationStem(
+        ctx: *mut ::std::os::raw::c_void,
+        path: *const ::std::os::raw::c_char,
+        line: ::std::os::raw::c_uint,
+        use_realpath: ::std::os::raw::c_uint,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetSourceStem(
+        ctx: *mut ::std::os::raw::c_void,
+        path: *const ::std::os::raw::c_char,
+        line: ::std::os::raw::c_uint,
+        use_realpath: ::std::os::raw::c_uint,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetTimescale(ctx: *mut ::std::os::raw::c_void, ts: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn fstWriterSetTimescaleFromString(
+        ctx: *mut ::std::os::raw::c_void,
+        s: *const ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetTimezero(ctx: *mut ::std::os::raw::c_void, tim: i64);
+}
+extern "C" {
+    pub fn fstWriterSetUpscope(ctx: *mut ::std::os::raw::c_void);
+}
+extern "C" {
+    pub fn fstWriterSetValueList(
+        ctx: *mut ::std::os::raw::c_void,
+        vl: *const ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn fstWriterSetVersion(
+        ctx: *mut ::std::os::raw::c_void,
+        vers: *const ::std::os::raw::c_char,
+    );
+}
+extern "C" {
     pub fn fstReaderClose(ctx: *mut ::std::os::raw::c_void);
 }
 extern "C" {
